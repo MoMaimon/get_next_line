@@ -1,4 +1,0 @@
-hello world2
-this is a sample2
-2
-get_next_line practice2

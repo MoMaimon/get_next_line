@@ -1,81 +1,102 @@
 /* ************************************************************************** */
 /*                                                                            */
-/*                                                       :::      ::::::::    */
-/*   get_next_line.c                                   :+:      :+:    :+:    */
-/*                                                   +:+ +:+         +:+      */
-/*   By: mabd-elh <mabd-elh@student.42amman.com>   #+#  +:+       +#+         */
-/*                                               +#+#+#+#+#+   +#+            */
-/*   Created: 2026/10/03 17:44:44 by mabd-elh         #+#    #+#              */
-/*   Updated: 2026/10/04 14:03:07 by mabd-elh        ###   ########.fr        */
+/*                                                        :::      ::::::::   */
+/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mabd-elh <mabd-elh@student.42amman.com>    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/10/03 17:44:44 by mabd-elh          #+#    #+#             */
+/*   Updated: 2026/10/06 21:55:39 by mabd-elh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-int handle_remain(char **line, char **remain)
+int	handle_remain(char **line, char **buffer, ssize_t bytes)
 {
-	char *nl;
-	int temp;
+	char	*nl;
 
-	nl = ft_strchr(*remain, '\n');
+	nl = ft_strchr(*buffer, '\n');
 	if (nl)
+		return (sep_buffer(buffer, line, nl));
+	if (bytes < BUFFER_SIZE && bytes)
 	{
-		temp = (long)nl - (long)*remain + 1;
-		*line = ft_strjoin(*line, ft_substr(*remain, 0, temp));
-		ft_memcpy(*remain, &nl[1], ft_strlen(nl));
+		*line = ft_strjoin(*line, *buffer, bytes);
+		if (!line)
+			return (0);
+		(*buffer)[0] = '\0';
 		return (1);
 	}
 	else
 	{
-		*line = ft_strjoin(*line, *remain);
-		*remain[0] = '\0';
-		return (0);
+		*line = ft_strjoin(*line, *buffer, ft_strlen(*buffer));
+		if (!line)
+			return (0);
+		*buffer[0] = '\0';
+		return (-1);
 	}
 }
 
-int get_until_new_line(int fd, char **remain, char **line)
+int	get_until_new_line(int fd, char **buffer, char **line)
 {
-	char *buffer;
-	char *nl;
-	ssize_t bytes;
+	ssize_t	bytes;
 
-	buffer = malloc((BUFFER_SIZE + 1) * sizeof(char));
-	nl = NULL;
-	if (!buffer)
+	bytes = read(fd, *buffer, BUFFER_SIZE);
+	if (bytes < 0)
 		return (0);
-	while ((bytes = read(fd, buffer, BUFFER_SIZE)))
+	(*buffer)[bytes] = '\0';
+	while (bytes && !ft_strchr(*buffer, '\n'))
 	{
-		buffer[BUFFER_SIZE] = '\0';
-		nl = ft_strchr(buffer, '\n');
-		if (nl)
-			break;
-		*line = ft_strjoin(*line, buffer);
+		(*buffer)[bytes] = '\0';
+		if (bytes < BUFFER_SIZE)
+			break ;
+		*line = ft_strjoin(*line, *buffer, ft_strlen(*buffer));
+		if (!*line)
+			return (0);
+		bytes = read(fd, *buffer, BUFFER_SIZE);
 	}
-	if (nl)
+	(*buffer)[bytes] = '\0';
+	if (**buffer)
 	{
-		*remain = ft_strjoin(*remain, ft_substr(buffer, 0, bytes));
-		handle_remain(line, remain);
+		if (!handle_remain(line, buffer, bytes))
+			return (0);
 	}
-	if (!buffer)
+	if (!bytes && !*line)
 		return (0);
 	return (1);
 }
 
-char *get_next_line(int fd)
+char	*free_all(char **buffer, char *line)
 {
-	static char *remain;
-	char *line;
+	free(*buffer);
+	*buffer = NULL;
+	free(line);
+	return (NULL);
+}
+
+char	*get_next_line(int fd)
+{
+	static char	*buffer;
+	char		*line;
+	int			temp;
 
 	line = NULL;
-	if (!remain)
+	if (!buffer)
 	{
-		remain = malloc((BUFFER_SIZE + 1) * sizeof(char));
-		if (!remain)
+		buffer = malloc((BUFFER_SIZE + 1) * sizeof(char));
+		if (!buffer)
 			return (NULL);
+		buffer[0] = '\0';
 	}
-	if (remain[0] && handle_remain(&line, &remain))
-		return (line);
-	else if (!get_until_new_line(fd, &remain, &line))
-		return (NULL);
+	if (buffer[0])
+	{
+		temp = handle_remain(&line, &buffer, 0);
+		if (!temp)
+			return (NULL);
+		else if (temp == 1)
+			return (line);
+	}
+	if (!get_until_new_line(fd, &buffer, &line))
+		return (free_all(&buffer, line));
 	return (line);
 }
