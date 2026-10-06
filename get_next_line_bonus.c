@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mabd-elh <mabd-elh@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/03 17:44:44 by mabd-elh          #+#    #+#             */
-/*   Updated: 2026/10/06 22:05:55 by mabd-elh         ###   ########.fr       */
+/*   Updated: 2026/10/06 22:09:19 by mabd-elh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
 int	handle_remain(char **line, char **buffer, ssize_t bytes)
 {
@@ -74,27 +74,27 @@ char	*free_all(char **buffer, char *line)
 
 char	*get_next_line(int fd)
 {
-	static char	*buffer;
+	static char	*buffer[2048];
 	char		*line;
 	int			temp;
 
 	line = NULL;
-	if (!buffer)
+	if (!buffer[fd])
 	{
-		buffer = malloc((BUFFER_SIZE + 1) * sizeof(char));
-		if (!buffer)
+		buffer[fd] = malloc((BUFFER_SIZE + 1) * sizeof(char));
+		if (!buffer[fd])
 			return (NULL);
-		buffer[0] = '\0';
+		buffer[fd][0] = '\0';
 	}
-	if (buffer[0])
+	if (buffer[fd][0])
 	{
-		temp = handle_remain(&line, &buffer, 0);
+		temp = handle_remain(&line, &buffer[fd], 0);
 		if (!temp)
 			return (NULL);
 		else if (temp == 1)
 			return (line);
 	}
-	if (!get_until_new_line(fd, &buffer, &line))
-		return (free_all(&buffer, line));
+	if (!get_until_new_line(fd, &buffer[fd], &line))
+		return (free_all(&buffer[fd], line));
 	return (line);
 }
