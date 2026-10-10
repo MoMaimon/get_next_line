@@ -6,7 +6,7 @@
 /*   By: mabd-elh <mabd-elh@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/03 21:15:29 by mabd-elh          #+#    #+#             */
-/*   Updated: 2026/10/06 22:07:28 by mabd-elh         ###   ########.fr       */
+/*   Updated: 2026/10/10 20:53:19 by mabd-elh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,12 +47,12 @@ char	*ft_strjoin(char *s1, char const *s2, size_t len)
 	s1_len = ft_strlen(s1);
 	str = malloc((s1_len + len + 1) * sizeof(char));
 	if (!str)
-		return (NULL);
-	while (i < s1_len)
 	{
-		str[i] = s1[i];
-		i++;
+		free(s1);
+		return (NULL);
 	}
+	while (i++ < s1_len)
+		str[i - 1] = s1[i - 1];
 	i = 0;
 	while (i < len)
 	{
