@@ -6,7 +6,7 @@
 /*   By: mabd-elh <mabd-elh@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/03 17:44:44 by mabd-elh          #+#    #+#             */
-/*   Updated: 2026/10/06 22:09:19 by mabd-elh         ###   ########.fr       */
+/*   Updated: 2026/10/10 20:43:48 by mabd-elh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ char	*get_next_line(int fd)
 	{
 		temp = handle_remain(&line, &buffer[fd], 0);
 		if (!temp)
-			return (NULL);
+			return (free_all(&buffer[fd], line));
 		else if (temp == 1)
 			return (line);
 	}
